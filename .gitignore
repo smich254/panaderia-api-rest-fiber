@@ -1,0 +1,18 @@
+# Binarios y Objetos
+bin/
+pkg/
+
+# Archivos de IDE y Editores de Código
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Archivos del Sistema Operativo
+.DS_Store
+
+# Archivos Temporales
+*.tmp
+
+# Base de Datos
+*.db
