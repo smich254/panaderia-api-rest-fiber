@@ -3,35 +3,29 @@ package database
 import (
 	"database/sql"
 	"log"
-	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func SetupDB() {
-	// Crear la carpeta si no existe
-	if _, err := os.Stat("database"); os.IsNotExist(err) {
-		err := os.Mkdir("database", 0755)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	// Resto del código
+func SetupProductsDB() {
 	db, err := sql.Open("sqlite3", "database/panaderia.db")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
+	// Crear la tabla de productos
 	createTableQuery := `
-	CREATE TABLE users (
+	CREATE TABLE products (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		email TEXT UNIQUE,
-		password TEXT,
-		isAdmin BOOLEAN
+		name TEXT UNIQUE,
+		description TEXT,
+		price REAL,
+		stock INTEGER,
+		imageURL TEXT
 	);
 	`
+
 	_, err = db.Exec(createTableQuery)
 	if err != nil {
 		log.Fatal(err)

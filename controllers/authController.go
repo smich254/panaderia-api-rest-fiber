@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"log"
+	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,24 +14,36 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtSecret = []byte("@123@") /// Cambia esto a tu propia llave secreta
+var jwtSecret = []byte(os.Getenv("JWT_SECRET")) // Obtener la llave secreta de una variable de entorno
 
 func GenerateJWT(email string, isAdmin bool) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
+	// La parte de "expiración" ahora se manejará aquí
+	expTime := time.Now().Add(72 * time.Hour).Unix()
+
 	claims := token.Claims.(jwt.MapClaims)
 	claims["email"] = email
 	claims["admin"] = isAdmin
-	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+	claims["exp"] = expTime
 
 	t, err := token.SignedString(jwtSecret)
+	if err != nil {
+		log.Println("Error while generating JWT:", err)
+		return "", err
+	}
 
-	return t, err
+	return t, nil
 }
 
 func checkPassword(hashedPassword, password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
-	return err == nil
+    hashedBytes, err := hex.DecodeString(hashedPassword)
+    if err != nil {
+        log.Printf("Error decoding hex: %v", err)
+        return false
+    }
+    err = bcrypt.CompareHashAndPassword(hashedBytes, []byte(password))
+    return err == nil
 }
 
 func hashPassword(password string) string {
@@ -42,37 +55,41 @@ func hashPassword(password string) string {
 }
 
 func Login(c *fiber.Ctx) error {
-	db := database.InitDB()
-	defer db.Close()
+    db := database.InitDB()
+    defer db.Close()
 
-	var user struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
+    var user struct {
+        Email    string `json:"email"`
+        Password string `json:"password"`
+    }
 
-	if err := c.BodyParser(&user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
-	}
+    if err := c.BodyParser(&user); err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
+    }
 
-	var email, hashedPassword string
-	err := db.QueryRow("SELECT email, password FROM users WHERE email = ?", user.Email).Scan(&email, &hashedPassword)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
-		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
-	}
+    var email, hashedPassword string
+    err := db.QueryRow("SELECT email, password FROM users WHERE email = ?", user.Email).Scan(&email, &hashedPassword)
+    if err != nil {
+        if err == sql.ErrNoRows {
+            log.Printf("No user found with email: %s", user.Email)  // Mensaje de depuración agregado
+            return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
+        }
+        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
+    }
 
-	if !checkPassword(hashedPassword, user.Password) {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
-	}
+    log.Printf("DB password: %s, Provided password: %s", hashedPassword, user.Password)  // Mensaje de depuración agregado
 
-	token, err := GenerateJWT("user@example.com", false)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not login"})
-	}
+    if !checkPassword(hashedPassword, user.Password) {
+        log.Printf("Passwords do not match for email: %s", user.Email)  // Mensaje de depuración agregado
+        return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
+    }
 
-	return c.JSON(fiber.Map{"token": token})
+    token, err := GenerateJWT(email, false)  // Corregido para utilizar la variable email
+    if err != nil {
+        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not login"})
+    }
+
+    return c.JSON(fiber.Map{"token": token})
 }
 
 func AdminLogin(c *fiber.Ctx) error {
@@ -127,7 +144,7 @@ func Register(c *fiber.Ctx) error {
 	var user struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
-		IsAdmin  bool   `json:"is_admin"`
+		IsAdmin  bool   `json:"isAdmin"`
 	}
 
 	if err := c.BodyParser(&user); err != nil {
@@ -136,10 +153,12 @@ func Register(c *fiber.Ctx) error {
 
 	hashedPassword := hashPassword(user.Password)
 
-	_, err := db.Exec("INSERT INTO users (email, password, is_admin) VALUES (?, ?, ?)", user.Email, hashedPassword, user.IsAdmin)
+	_, err := db.Exec("INSERT INTO users (email, password, isAdmin) VALUES (?, ?, ?)", user.Email, hashedPassword, user.IsAdmin)
 	if err != nil {
+		log.Println("Error inserting new user:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not insert user"})
 	}
+	
 
 	return c.JSON(fiber.Map{"message": "User registered"})
 }
