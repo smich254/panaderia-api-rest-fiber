@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/smich254/panaderia-api-rest-fiber/controllers"
+	"github.com/smich254/panaderia-api-rest-fiber/database"
 	middleware "github.com/smich254/panaderia-api-rest-fiber/middlewares"
 	"github.com/smich254/panaderia-api-rest-fiber/routes"
 )
@@ -29,15 +30,14 @@ func main() {
 
 	// Configura las rutas de autenticación
 	routes.SetupAuthRoutes(app)
-	
+
 	// Configura las rutas de productos
 	routes.SetupProductRoutes(app)
 
-
-    // Iniciar la base de datos y crear tablas si no existen
+	// Iniciar la base de datos y crear tablas si no existen
 	// Descomentar las 2 lineas de código para el primer uso
-    //database.SetupDB()
-	//database.SetupProductAndCartTables()
+	database.SetupDB()
+	database.SetupProductAndCartTables()
 
 	// Escucha en el puerto 3000
 	app.Listen(":3000")
