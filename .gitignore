@@ -16,3 +16,6 @@ pkg/
 
 # Base de Datos
 *.db
+
+# Archivos windows
+main.exe
