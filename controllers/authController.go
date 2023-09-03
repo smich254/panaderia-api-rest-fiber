@@ -109,11 +109,16 @@ func AdminLogin(c *fiber.Ctx) error {
 	var email, hashedPassword string
 	var isAdmin bool
 
-	err := db.QueryRow("SELECT email, password, is_admin FROM users WHERE email = ?", admin.Email).Scan(&email, &hashedPassword, &isAdmin)
+	err := db.QueryRow("SELECT email, password, isAdmin FROM users WHERE email = ?", admin.Email).Scan(&email, &hashedPassword, &isAdmin)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			log.Printf("No user found with email: %s", admin.Email) 
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid admin credentials"})
+		} else {
+			log.Printf("SQL Query Error: %v", err)  // Log the SQL error
+			log.Printf("Failed admin login attempt for email: %s", admin.Email)  // Debug message
 		}
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
 	}
 
@@ -156,6 +161,7 @@ func Register(c *fiber.Ctx) error {
 	_, err := db.Exec("INSERT INTO users (email, password, isAdmin) VALUES (?, ?, ?)", user.Email, hashedPassword, user.IsAdmin)
 	if err != nil {
 		log.Println("Error inserting new user:", err)
+		log.Println("SQL Error:", err) 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not insert user"})
 	}
 	
