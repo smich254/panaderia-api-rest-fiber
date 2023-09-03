@@ -35,8 +35,10 @@ func main() {
 
 	// Iniciar la base de datos y crear tablas si no existen
 	// Descomentar las 2 lineas de código para el primer uso
-	// database.SetupDB()
-	// database.SetupProductAndCartTables()
+	// Nota: Actualizar las herramientas de go desde VS Code antes
+	// De descomentar
+	//database.SetupDB()
+	//database.SetupProductAndCartTables()
 
 	// Escucha en el puerto 3000
 	app.Listen(":3000")
