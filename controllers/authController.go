@@ -130,7 +130,7 @@ func AdminLogin(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Not an admin"})
 	}
 
-	if admin.AdminCode != "someHardcodedAdminCode" {
+	if admin.AdminCode != "@123@" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid admin code"})
 	}
 
