@@ -168,3 +168,21 @@ func Register(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"message": "User registered"})
 }
+
+func Logout(c *fiber.Ctx) error {
+	// Generar un nuevo token con tiempo de expiración corto (1 segundo)
+	token := jwt.New(jwt.SigningMethodHS256)
+	expTime := time.Now().Add(1 * time.Second).Unix() // Expira en 1 segundo
+
+	claims := token.Claims.(jwt.MapClaims)
+	claims["exp"] = expTime
+	claims["isLoggedIn"] = false // Establecer en false
+
+	t, err := token.SignedString(jwtSecret)
+	if err != nil {
+		log.Println("Error while generating JWT:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not logout"})
+	}
+
+	return c.JSON(fiber.Map{"message": "Logged out", "token": t})
+}

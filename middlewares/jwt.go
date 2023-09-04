@@ -1,4 +1,4 @@
-package middleware
+package middlewares
 
 import (
 	"fmt"
@@ -13,13 +13,27 @@ var jwtSecret = []byte("@123@")
 
 // JWTMiddleware configura el middleware JWT.
 func JWTMiddleware() func(c *fiber.Ctx) error {
-	return jwtware.New(jwtware.Config{
-		KeyFunc: func(t *jwt.Token) (interface{}, error) {
-			// Verificar siempre el método de firma
-			if t.Method.Alg() != jwtware.HS256 {
-				return nil, fmt.Errorf("Unexpected jwt signing method=%v", t.Header["alg"])
-			}
-			return jwtSecret, nil
-		},
-	})
+	return func(c *fiber.Ctx) error {
+		// Primero, ejecutar el middleware JWT original
+		if err := jwtware.New(jwtware.Config{
+			KeyFunc: func(t *jwt.Token) (interface{}, error) {
+				// Verificar siempre el método de firma
+				if t.Method.Alg() != jwtware.HS256 {
+					return nil, fmt.Errorf("Unexpected jwt signing method=%v", t.Header["alg"])
+				}
+				return jwtSecret, nil
+			},
+		})(c); err != nil {
+			return err
+		}
+
+		// Luego, verificar el campo "isLoggedIn"
+		user := c.Locals("user").(*jwt.Token)
+		claims := user.Claims.(jwt.MapClaims)
+		if isLoggedIn, ok := claims["isLoggedIn"].(bool); !ok || !isLoggedIn {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Not logged in"})
+		}
+
+		return c.Next()
+	}
 }

@@ -16,6 +16,8 @@ func main() {
 	// Usa el middleware de registro para todas las rutas
 	app.Use(middleware.Logging())
 
+	app.Use("/logout", middleware.LogoutMiddleware())
+
 	// Crea un nuevo grupo de rutas que será protegido por el middleware JWT
 	protected := app.Group("/api", middleware.JWTMiddleware())
 

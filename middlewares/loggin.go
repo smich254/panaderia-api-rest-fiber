@@ -1,4 +1,4 @@
-package middleware
+package middlewares
 
 import (
 	"log"
@@ -12,7 +12,7 @@ func Logging() fiber.Handler {
 		start := time.Now()
 		err := c.Next()
 		duration := time.Since(start)
-		
+
 		// Si hay un error, registra el error además del tiempo de procesamiento
 		if err != nil {
 			log.Printf(
