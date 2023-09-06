@@ -3,37 +3,41 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/smich254/panaderia-api-rest-fiber/controllers"
+	"github.com/smich254/panaderia-api-rest-fiber/middlewares"
 )
 
 // SetupProtectedRoutes configura las rutas que requieren autenticación JWT
 func SetupProtectedRoutes(app fiber.Router) {
 	// Crear un grupo de rutas para el usuario
-	userGroup := app.Group("/user")
+	userGroupProtected := app.Group("/api/user", middlewares.JWTMiddleware())
 	
 	// Ruta para obtener el perfil del usuario
-	userGroup.Get("/profile", controllers.GetUserProfile)
+	userGroupProtected.Get("/profile", controllers.GetUserProfile)
 
 	// Ruta para actualizar el perfil del usuario
-	userGroup.Put("/profile", controllers.UpdateUserProfile)
+	userGroupProtected.Put("/profile", controllers.UpdateUserProfile)
 
 	// Crear un grupo de rutas para el administrador
-	adminGroup := app.Group("/admin")
+	adminGroupProtected := app.Group("/api/admin", middlewares.JWTMiddleware())
 
 	// Ruta para listar todos los usuarios
-	adminGroup.Get("/users", controllers.ListUsers)
+	adminGroupProtected.Get("/users", controllers.ListUsers)
 
 	// Ruta para actualizar un usuario
-	adminGroup.Put("/users/:id", controllers.UpdateUser)
+	adminGroupProtected.Put("/users/:id", controllers.UpdateUser)
 
 	// Ruta para eliminar un usuario
-	adminGroup.Delete("/users/:id", controllers.DeleteUser)
+	adminGroupProtected.Delete("/users/:id", controllers.DeleteUser)
+
+	// Ruta para obtener un producto
+	adminGroupProtected.Get("/products", controllers.AddProduct)
 
 	// Ruta para agregar un producto
-	adminGroup.Post("/products", controllers.AddProduct)
+	adminGroupProtected.Post("/products", controllers.AddProduct)
 
 	// Ruta para actualizar un producto
-	adminGroup.Put("/products/:id", controllers.UpdateProduct)
+	adminGroupProtected.Put("/products/:id", controllers.UpdateProduct)
 
 	// Ruta para eliminar un producto
-	adminGroup.Delete("/products/:id", controllers.DeleteProduct)
+	adminGroupProtected.Delete("/products/:id", controllers.DeleteProduct)
 }

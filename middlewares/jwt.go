@@ -31,10 +31,12 @@ func JWTMiddleware() func(c *fiber.Ctx) error {
 		if token, ok := c.Locals("user").(*jwt.Token); ok {
 			claims := token.Claims.(jwt.MapClaims)
 			if isLoggedIn, ok := claims["isLoggedIn"].(bool); !ok || !isLoggedIn {
+				fmt.Println("Unauthorized due to isLoggedIn") 
 				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Not logged in"})
 			}
 		} else {
 			// Manejar el caso en que el token no existe o es nil
+			fmt.Println("Unauthorized due to missing token")
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Not authorized"})
 		}
 

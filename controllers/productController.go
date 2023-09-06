@@ -28,6 +28,7 @@ func isAdmin(c *fiber.Ctx) bool {
 
 // GetAllProducts obtiene todos los productos
 func GetAllProducts(c *fiber.Ctx) error {
+	log.Println("Fetching all products...")
 	db := database.InitDB()
 	defer db.Close()
 
@@ -53,6 +54,7 @@ func GetAllProducts(c *fiber.Ctx) error {
 
 // AddProduct agrega un nuevo producto
 func AddProduct(c *fiber.Ctx) error {
+	log.Println("Adding a new product...")
 	if !isAdmin(c) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
@@ -75,6 +77,7 @@ func AddProduct(c *fiber.Ctx) error {
 
 // DeleteProduct elimina un producto por su ID
 func DeleteProduct(c *fiber.Ctx) error {
+	log.Println("Deleting a product...")
 	if !isAdmin(c) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
@@ -97,6 +100,7 @@ func DeleteProduct(c *fiber.Ctx) error {
 
 // UpdateProduct actualiza un producto por su ID
 func UpdateProduct(c *fiber.Ctx) error {
+	log.Println("Updating a product...")
 	if !isAdmin(c) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}

@@ -9,5 +9,6 @@ import (
 func SetupAuthRoutes(app *fiber.App) {
 	app.Post("/api/login", controllers.Login)
 	app.Post("/api/admin-login", controllers.AdminLogin)
-	app.Post("/api/register", controllers.Register)  // Nueva línea
+	app.Post("/api/register", controllers.Register) 
+	app.Post("/api/logout", controllers.Logout)
 }

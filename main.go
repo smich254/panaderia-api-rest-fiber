@@ -15,13 +15,13 @@ func main() {
 	// Usa el middleware de registro para todas las rutas
 	app.Use(middlewares.Logging())
 
-	app.Use("/logout", middlewares.LogoutMiddleware())
+	// Usa el middleware de logout para todas las rutas
+	app.Use(middlewares.LogoutMiddleware())
 
 	// Crea un nuevo grupo de rutas que será protegido por el middleware JWT
-	protected := app.Group("/api", middlewares.JWTMiddleware())
 
 	// Configura las rutas protegidas (aquellas que requieren autenticación JWT)
-	routes.SetupProtectedRoutes(protected)
+	routes.SetupProtectedRoutes(app)
 
     // Configura las rutas del carrito de compras
     routes.SetupCartRoutes(app)
@@ -37,5 +37,12 @@ func main() {
 	//database.SetupProductAndCartTables()
 
 	// Escucha en el puerto 3000
+
+	app.Use(func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+		  "error": "Error 404: La página que estás buscando no se pudo encontrar. Si eres un desarrollador, consulta la documentación de la API para rutas válidas.",
+		})
+	  })
+	  
 	app.Listen(":3000")
 }
