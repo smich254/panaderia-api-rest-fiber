@@ -30,6 +30,7 @@ func JWTMiddleware() func(c *fiber.Ctx) error {
 		// Luego, verificar el campo "isLoggedIn"
 		if token, ok := c.Locals("user").(*jwt.Token); ok {
 			claims := token.Claims.(jwt.MapClaims)
+			fmt.Println(claims)
 			if isLoggedIn, ok := claims["isLoggedIn"].(bool); !ok || !isLoggedIn {
 				fmt.Println("Unauthorized due to isLoggedIn") 
 				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Not logged in"})

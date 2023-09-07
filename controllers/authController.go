@@ -3,6 +3,7 @@ package controllers
 import (
 	"database/sql"
 	"encoding/hex"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -89,7 +90,7 @@ func Login(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not login"})
 	}
-
+	fmt.Println("User logged in successfully")
 	return c.JSON(fiber.Map{"token": token})
 }
 
@@ -139,7 +140,7 @@ func AdminLogin(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not login"})
 	}
-
+	fmt.Println("User Admin logged in successfully")
 	return c.JSON(fiber.Map{"token": token})
 }
 

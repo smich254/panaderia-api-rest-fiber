@@ -7,7 +7,7 @@ import (
 )
 
 // SetupProtectedRoutes configura las rutas que requieren autenticación JWT
-func SetupProtectedRoutes(app fiber.Router) {
+func SetupProtectedRoutes(app *fiber.App) {
 	// Crear un grupo de rutas para el usuario
 	userGroupProtected := app.Group("/api/user", middlewares.JWTMiddleware())
 	
@@ -30,7 +30,7 @@ func SetupProtectedRoutes(app fiber.Router) {
 	adminGroupProtected.Delete("/users/:id", controllers.DeleteUser)
 
 	// Ruta para obtener un producto
-	adminGroupProtected.Get("/products", controllers.AddProduct)
+	adminGroupProtected.Get("/products", controllers.GetAllProducts)
 
 	// Ruta para agregar un producto
 	adminGroupProtected.Post("/products", controllers.AddProduct)
