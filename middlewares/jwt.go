@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"fmt"
+	"os"
 
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
@@ -9,7 +10,7 @@ import (
 )
 
 // jwtSecret debe ser la misma llave utilizada al firmar los tokens.
-var jwtSecret = []byte("@123@")
+var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
 // JWTMiddleware configura el middleware JWT.
 func JWTMiddleware() func(c *fiber.Ctx) error {

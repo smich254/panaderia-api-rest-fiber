@@ -1,13 +1,20 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 	"github.com/smich254/panaderia-api-rest-fiber/middlewares"
 	"github.com/smich254/panaderia-api-rest-fiber/routes"
 )
 
 func main() {
 	app := fiber.New()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	// Configura las rutas públicas (ej. login, registro)
 	routes.SetupAuthRoutes(app)
