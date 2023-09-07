@@ -15,12 +15,11 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+	// Usa el middleware de registro para todas las rutas
+	app.Use(middlewares.Logging())
 
 	// Configura las rutas públicas (ej. login, registro)
 	routes.SetupAuthRoutes(app)
-
-	// Usa el middleware de registro para todas las rutas
-	app.Use(middlewares.Logging())
 
 	// Configura las rutas protegidas (aquellas que requieren autenticación JWT)
 	routes.SetupProtectedRoutes(app)
@@ -34,9 +33,6 @@ func main() {
 	// De descomentar
 	//database.SetupDB()
 	//database.SetupProductAndCartTables()
-
-	// Usa el middleware de logout para todas las rutas
-	app.Use(middlewares.LogoutMiddleware())
 
 	app.Use(func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
