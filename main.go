@@ -7,6 +7,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/smich254/panaderia-api-rest-fiber/middlewares"
 	"github.com/smich254/panaderia-api-rest-fiber/routes"
+//  "github.com/smich254/panaderia-api-rest-fiber/database"
 )
 
 func main() {
@@ -31,8 +32,8 @@ func main() {
 	// Descomentar las 2 lineas de código para el primer uso
 	// Nota: Actualizar las herramientas de go desde VS Code antes
 	// De descomentar
-	//database.SetupDB()
-	//database.SetupProductAndCartTables()
+  //  database.SetupDB()
+  //  database.SetupProductAndCartTables()
 
 	app.Use(func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
