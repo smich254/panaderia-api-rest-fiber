@@ -34,10 +34,10 @@ func SetupProductAndCartTables() {
 		name VARCHAR(15) NOT NULL,
 		description VARCHAR(255),
 		categoryID INTEGER NOT NULL,
-		FOREIGN KEY (categoryID) REFERENCES categories (id),
 		price REAL NOT NULL,
 		stock INTEGER NOT NULL,
-		imageURL TEXT
+		imageURL TEXT,
+		FOREIGN KEY (categoryID) REFERENCES categories (id)
 	);
 	`
 	_, err = db.Exec(createProductTableQuery)

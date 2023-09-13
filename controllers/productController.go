@@ -10,6 +10,12 @@ import (
 )
 
 // Estructura para representar un producto
+
+type Category struct {
+	ID          	int     `json:"id"`
+	NameCategory    string  `json:"nameCategory"`
+}
+
 type Product struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name"`
@@ -20,117 +26,12 @@ type Product struct {
 	ImageURL    string  `json:"imageURL"`
 }
 
-type Category struct {
-	ID          	int     `json:"id"`
-	NameCategory    string  `json:"nameCategory"`
-}
 
 func isAdmin(c *fiber.Ctx) bool {
 	user := c.Locals("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	admin := claims["admin"].(bool)
 	return admin
-}
-
-// GetAllProducts obtiene todos los productos
-func GetAllProducts(c *fiber.Ctx) error {
-	log.Println("Fetching all products...")
-	db := database.InitDB()
-	defer db.Close()
-
-	rows, err := db.Query("SELECT * FROM products")
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
-	}
-	defer rows.Close()
-
-	var products []Product
-	for rows.Next() {
-		var product Product
-		err := rows.Scan(&product.ID, &product.Name, &product.Description, &product.CategoryID, &product.Price, &product.Stock, &product.ImageURL)
-		if err != nil {
-			log.Println("Error al escanear producto:", err)
-			continue
-		}
-		products = append(products, product)
-	}
-
-	return c.JSON(products)
-}
-
-// AddProduct agrega un nuevo producto
-func AddProduct(c *fiber.Ctx) error {
-	log.Println("Adding a new product...")
-	if !isAdmin(c) {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
-	}
-	db := database.InitDB()
-	defer db.Close()
-
-	product := new(Product)
-	if err := c.BodyParser(product); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
-	}
-
-	_, err := db.Exec("INSERT INTO products (name, description, categoryID, price, stock, imageURL) VALUES (?, ?, ?, ?, ?, ?)",
-		product.Name, product.Description, product.CategoryID, product.Price, product.Stock, product.ImageURL)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not insert product"})
-	}
-
-	return c.JSON(fiber.Map{"message": "Product added"})
-}
-
-// DeleteProduct elimina un producto por su ID
-func DeleteProduct(c *fiber.Ctx) error {
-	log.Println("Deleting a product...")
-	if !isAdmin(c) {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
-	}
-	db := database.InitDB()
-	defer db.Close()
-
-	id := c.Params("id")
-	productID, err := strconv.Atoi(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
-	}
-
-	_, err = db.Exec("DELETE FROM products WHERE id = ?", productID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not delete product"})
-	}
-
-	return c.JSON(fiber.Map{"message": "Product deleted"})
-}
-
-// UpdateProduct actualiza un producto por su ID
-func UpdateProduct(c *fiber.Ctx) error {
-	log.Println("Updating a product...")
-	if !isAdmin(c) {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
-	}
-	db := database.InitDB()
-	defer db.Close()
-
-	id := c.Params("id")
-	productID, err := strconv.Atoi(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
-	}
-
-	product := new(Product)
-	if err := c.BodyParser(product); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
-	}
-
-	_, err = db.Exec("UPDATE products SET name = ?, description = ?, categoryID = ?, price = ?, stock = ?, imageURL = ? WHERE id = ?",
-		product.Name, product.Description, product.Price, product.Stock, product.ImageURL, productID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not update product"})
-	}
-
-	return c.JSON(fiber.Map{"message": "Product updated"})
 }
 
 // GetAllCategories obtiene todas las categorias
@@ -232,4 +133,105 @@ func UpdateCategory(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"message": "Category updated"})
+}
+
+// GetAllProducts obtiene todos los productos
+func GetAllProducts(c *fiber.Ctx) error {
+	log.Println("Fetching all products...")
+	db := database.InitDB()
+	defer db.Close()
+
+	rows, err := db.Query("SELECT * FROM products")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
+	}
+	defer rows.Close()
+
+	var products []Product
+	for rows.Next() {
+		var product Product
+		err := rows.Scan(&product.ID, &product.Name, &product.Description, &product.CategoryID, &product.Price, &product.Stock, &product.ImageURL)
+		if err != nil {
+			log.Println("Error al escanear producto:", err)
+			continue
+		}
+		products = append(products, product)
+	}
+
+	return c.JSON(products)
+}
+
+// AddProduct agrega un nuevo producto
+func AddProduct(c *fiber.Ctx) error {
+	log.Println("Adding a new product...")
+	if !isAdmin(c) {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+	db := database.InitDB()
+	defer db.Close()
+
+	product := new(Product)
+	if err := c.BodyParser(product); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
+	}
+
+	_, err := db.Exec("INSERT INTO products (name, description, categoryID, price, stock, imageURL) VALUES (?, ?, ?, ?, ?, ?)",
+		product.Name, product.Description, product.CategoryID, product.Price, product.Stock, product.ImageURL)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not insert product"})
+	}
+
+	return c.JSON(fiber.Map{"message": "Product added"})
+}
+
+// DeleteProduct elimina un producto por su ID
+func DeleteProduct(c *fiber.Ctx) error {
+	log.Println("Deleting a product...")
+	if !isAdmin(c) {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+	db := database.InitDB()
+	defer db.Close()
+
+	id := c.Params("id")
+	productID, err := strconv.Atoi(id)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
+	}
+
+	_, err = db.Exec("DELETE FROM products WHERE id = ?", productID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not delete product"})
+	}
+
+	return c.JSON(fiber.Map{"message": "Product deleted"})
+}
+
+// UpdateProduct actualiza un producto por su ID
+func UpdateProduct(c *fiber.Ctx) error {
+	log.Println("Updating a product...")
+	if !isAdmin(c) {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+	db := database.InitDB()
+	defer db.Close()
+
+	id := c.Params("id")
+	productID, err := strconv.Atoi(id)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
+	}
+
+	product := new(Product)
+	if err := c.BodyParser(product); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
+	}
+
+	_, err = db.Exec("UPDATE products SET name = ?, description = ?, categoryID = ?, price = ?, stock = ?, imageURL = ? WHERE id = ?",
+		product.Name, product.Description, product.Price, product.Stock, product.ImageURL, productID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not update product"})
+	}
+
+	return c.JSON(fiber.Map{"message": "Product updated"})
 }
