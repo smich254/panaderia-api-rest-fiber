@@ -5,7 +5,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
-	"github.com/smich254/panaderia-api-rest-fiber/database"
+	"github.com/smich254/panaderia-api-rest-fiber/controllers"
+
+	//"github.com/smich254/panaderia-api-rest-fiber/database"
 	"github.com/smich254/panaderia-api-rest-fiber/middlewares"
 	"github.com/smich254/panaderia-api-rest-fiber/routes"
 )
@@ -16,6 +18,13 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+
+	// Crear un grupo para acceso general
+	generalAccess := app.Group("/api/")
+	
+	// Ruta para obtener la lista de productos
+	generalAccess.Get("/listproducts", controllers.GetAllProducts)
+
 	// Usa el middleware de registro para todas las rutas
 	app.Use(middlewares.Logging())
 
@@ -34,7 +43,7 @@ func main() {
 	// De descomentar
 	//database.SetupDB()
 	
-	database.SetupProductAndCartTables()
+	//database.SetupProductAndCartTables()
 
 	app.Use(func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
