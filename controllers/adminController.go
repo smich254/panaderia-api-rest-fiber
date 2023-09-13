@@ -6,16 +6,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/smich254/panaderia-api-rest-fiber/database"
+	"github.com/smich254/panaderia-api-rest-fiber/models"
 )
-
-type User struct {
-	ID          int     `json:"id"`
-	Name        string  `json:"name"`
-	LastName	string  `json:"lastName"`
-	Email		string	`json:"email"`
-	Password	string 	`json:"password"`
-	IsAdmin     bool    `json:"isAdmin"`
-}
 
 // GetAllUsersByAdmin obtiene todos los usuarios
 func GetAllUsersByAdmin(c *fiber.Ctx) error {
@@ -32,9 +24,9 @@ func GetAllUsersByAdmin(c *fiber.Ctx) error {
 	}
 	defer rows.Close()
 
-	var users []User
+	var users []models.User
 	for rows.Next() {
-		var user User
+		var user models.User
 		err := rows.Scan(&user.ID, &user.Name, &user.LastName, &user.Password, &user.IsAdmin)
 		if err != nil {
 			log.Println("Error al escanear usuarios:", err)
@@ -54,7 +46,7 @@ func AddPUserByAdmin(c *fiber.Ctx) error {
 	db := database.InitDB()
 	defer db.Close()
 
-	user := new(User)
+	user := new(models.User)
 	if err := c.BodyParser(user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
 	}
@@ -106,7 +98,7 @@ func UpdateUserByAdmin(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
 	}
 
-	user := new(User)
+	user := new(models.User)
 	if err := c.BodyParser(user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
 	}

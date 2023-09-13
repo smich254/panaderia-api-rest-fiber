@@ -1,7 +1,10 @@
 package models
 
 type User struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	// Otros campos aquí
+	ID          int     `json:"id"`
+	Name        string  `json:"name"`
+	LastName	string  `json:"lastName"`
+	Email		string	`json:"email"`
+	Password	string 	`json:"password"`
+	IsAdmin     bool    `json:"isAdmin"`
 }

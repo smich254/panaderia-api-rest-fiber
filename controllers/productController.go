@@ -6,26 +6,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/smich254/panaderia-api-rest-fiber/database"
+	"github.com/smich254/panaderia-api-rest-fiber/models"
 )
 
-// Estructura para representar un producto
-
-type Category struct {
-	ID          	int     `json:"id"`
-	NameCategory    string  `json:"nameCategory"`
-}
-
-type Product struct {
-	ID          int     `json:"id"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	CategoryID	int		`json:"categoryID"`
-	Price       float64 `json:"price"`
-	Stock       int     `json:"stock"`
-	ImageURL    string  `json:"imageURL"`
-}
-
-// GetAllCategories obtiene todas las categorias
 func GetAllCategories(c *fiber.Ctx) error {
 	log.Println("Fetching all categories...")
 	if !isAdmin(c) {
@@ -40,9 +23,9 @@ func GetAllCategories(c *fiber.Ctx) error {
 	}
 	defer rows.Close()
 
-	var categories []Category
+	var categories []models.Category
 	for rows.Next() {
-		var category Category
+		var category models.Category
 		err := rows.Scan(&category.ID, &category.NameCategory)
 		if err != nil {
 			log.Println("Error al escanear categoria:", err)
@@ -63,7 +46,7 @@ func AddCategory(c *fiber.Ctx) error {
 	db := database.InitDB()
 	defer db.Close()
 
-	category := new(Category)
+	category := new(models.Category)
 	if err := c.BodyParser(category); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
 	}
@@ -115,7 +98,7 @@ func UpdateCategory(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
 	}
 
-	category := new(Category)
+	category := new(models.Category)
 	if err := c.BodyParser(category); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
 	}
@@ -141,9 +124,9 @@ func GetAllProducts(c *fiber.Ctx) error {
 	}
 	defer rows.Close()
 
-	var products []Product
+	var products []models.Product
 	for rows.Next() {
-		var product Product
+		var product models.Product
 		err := rows.Scan(&product.ID, &product.Name, &product.Description, &product.CategoryID, &product.Price, &product.Stock, &product.ImageURL)
 		if err != nil {
 			log.Println("Error al escanear producto:", err)
@@ -164,7 +147,7 @@ func AddProduct(c *fiber.Ctx) error {
 	db := database.InitDB()
 	defer db.Close()
 
-	product := new(Product)
+	product := new(models.Product)
 	if err := c.BodyParser(product); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
 	}
@@ -216,7 +199,7 @@ func UpdateProduct(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
 	}
 
-	product := new(Product)
+	product := new(models.Product)
 	if err := c.BodyParser(product); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
 	}

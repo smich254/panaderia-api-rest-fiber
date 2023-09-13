@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/smich254/panaderia-api-rest-fiber/database"
+	"github.com/smich254/panaderia-api-rest-fiber/models"
 	// Importa cualquier otro paquete necesario
 )
 
@@ -32,7 +33,7 @@ func GetUserProfile(c *fiber.Ctx) error {
 	defer db.Close()
 
 	row := db.QueryRow("SELECT * FROM users WHERE id = ?", userId)
-	var user User
+	var user models.User
 	err := row.Scan(&user.ID, &user.Name, &user.LastName, &user.Password, &user.IsAdmin)
 	if err != nil {
 		log.Println("Error al escanear el perfil del usuario:", err)
@@ -67,7 +68,7 @@ func UpdateUserProfile(c *fiber.Ctx) error {
 	db := database.InitDB()
 	defer db.Close()
 
-	user := new(User)
+	user := new(models.User)
 	if err := c.BodyParser(user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
 	}

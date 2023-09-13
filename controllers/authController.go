@@ -17,16 +17,16 @@ import (
 
 var jwtSecret = []byte(os.Getenv("JWT_SECRET")) // Obtener la llave secreta de una variable de entorno
 
-func GenerateJWT(email string, name string, lastName string, isAdmin bool, isLoggedIn bool) (string, error) {
+func GenerateJWT(name string, lastName string, email string, isAdmin bool, isLoggedIn bool) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	// La parte de "expiración" ahora se manejará aquí
 	expTime := time.Now().Add(72 * time.Hour).Unix()
 
 	claims := token.Claims.(jwt.MapClaims)
-	claims["email"] = email
 	claims["name"] = name
 	claims["lastName"] = lastName
+	claims["email"] = email
 	claims["admin"] = isAdmin
 	claims["exp"] = expTime
 	claims["isLoggedIn"] = isLoggedIn
@@ -113,7 +113,8 @@ func AdminLogin(c *fiber.Ctx) error {
 	var email, hashedPassword, name, lastName string
 	var isAdmin bool
 
-	err := db.QueryRow("SELECT email, name, lastName, password, isAdmin FROM users WHERE email = ?", admin.Email).Scan(&email, &hashedPassword, &name, &lastName, &isAdmin)
+	
+	err := db.QueryRow("SELECT email, name, lastName, password, isAdmin FROM users WHERE email = ?", admin.Email).Scan(&email, &name, &lastName, &hashedPassword, &isAdmin)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("No user found with email: %s", admin.Email)
@@ -138,7 +139,7 @@ func AdminLogin(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid admin code"})
 	}
 
-	token, err := GenerateJWT("admin@example.com", "name_example", "lastName_example", true, true)
+	token, err := GenerateJWT("admin@example.com", name, lastName, true, true)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not login"})
 	}
@@ -151,11 +152,11 @@ func Register(c *fiber.Ctx) error {
 	defer db.Close()
 
 	var user struct {
-		Email    string `json:"email"`
-		Name string `json:"name"`
-		LastNam string `json:"lastName"`
-		Password string `json:"password"`
-		IsAdmin  bool   `json:"isAdmin"`
+		Name 		string `json:"name"`
+		LastName 	string `json:"lastName"`
+		Email    	string `json:"email"`
+		Password 	string `json:"password"`
+		IsAdmin  	bool   `json:"isAdmin"`
 	}
 
 	if err := c.BodyParser(&user); err != nil {
@@ -164,7 +165,7 @@ func Register(c *fiber.Ctx) error {
 
 	hashedPassword := hashPassword(user.Password)
 
-	_, err := db.Exec("INSERT INTO users (email, name, lastName, password, isAdmin) VALUES (?, ?, ?, ?, ?)", user.Email, hashedPassword, user.IsAdmin)
+	_, err := db.Exec("INSERT INTO users (name, lastName, email, password, isAdmin) VALUES (?, ?, ?, ?, ?)", user.Name, user.LastName, user.Email, hashedPassword, user.IsAdmin)
 	if err != nil {
 		log.Println("Error inserting new user:", err)
 		log.Println("SQL Error:", err)
