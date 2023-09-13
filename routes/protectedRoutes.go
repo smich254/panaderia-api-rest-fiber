@@ -8,6 +8,7 @@ import (
 
 // SetupProtectedRoutes configura las rutas que requieren autenticación JWT
 func SetupProtectedRoutes(app *fiber.App) {
+
 	// Crear un grupo de rutas para el usuario
 	userGroupProtected := app.Group("/api/user", middlewares.JWTMiddleware())
 	
@@ -20,14 +21,17 @@ func SetupProtectedRoutes(app *fiber.App) {
 	// Crear un grupo de rutas para el administrador
 	adminGroupProtected := app.Group("/api/admin", middlewares.JWTMiddleware())
 
-	// Ruta para listar todos los usuarios
-	adminGroupProtected.Get("/users", controllers.ListUsers)
+	// Ruta para listar todos los usuarios por medio de adminuser
+	adminGroupProtected.Get("/users", controllers.GetAllUsersByAdmin)
 
-	// Ruta para actualizar un usuario
-	adminGroupProtected.Put("/users/:id", controllers.UpdateUser)
+	// Ruta para agregar un usuario por medio de AdminUser
+	adminGroupProtected.Get("/adduser", controllers.AddPUserByAdmin)
 
-	// Ruta para eliminar un usuario
-	adminGroupProtected.Delete("/users/:id", controllers.DeleteUser)
+	// Ruta para actualizar un usuario por medio de adminuser
+	adminGroupProtected.Put("/users/:id", controllers.UpdateUserByAdmin)
+
+	// Ruta para eliminar un usuario por medio de adminuser
+	adminGroupProtected.Delete("/users/:id", controllers.DeleteUserByAdmin)
 
 	// Ruta para obtener un producto
 	adminGroupProtected.Get("/products", controllers.GetAllProducts)
@@ -40,4 +44,16 @@ func SetupProtectedRoutes(app *fiber.App) {
 
 	// Ruta para eliminar un producto
 	adminGroupProtected.Delete("/products/:id", controllers.DeleteProduct)
+
+	// Ruta para obtener todas las categorias
+	adminGroupProtected.Get("/categories", controllers.GetAllCategories)
+
+	// Ruta para agregar una categoria
+	adminGroupProtected.Post("/categories", controllers.AddCategory)
+
+	// Ruta para actualizar una categoria
+	adminGroupProtected.Put("/categories/:id", controllers.UpdateCategory)
+
+	// Ruta para eliminar una categoria
+	adminGroupProtected.Delete("/categories/:id", controllers.DeleteCategory)
 }
