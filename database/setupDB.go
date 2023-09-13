@@ -27,8 +27,10 @@ func SetupDB() {
 	createTableQuery := `
 	CREATE TABLE users (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		name VARCHAR(20),
+		lastName VARCHAR(20),
 		email TEXT UNIQUE,
-		password TEXT,
+		password VARCHAR(20),
 		isAdmin BOOLEAN
 	);
 	`
@@ -36,4 +38,5 @@ func SetupDB() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 }
