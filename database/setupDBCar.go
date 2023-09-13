@@ -14,6 +14,19 @@ func SetupProductAndCartTables() {
 	}
 	defer db.Close()
 
+	// Crear la tabla de categorias
+	createCategoryTableQuery := `
+	CREATE TABLE IF NOT EXISTS categories (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		nameCategory VARCHAR(15) NOT NULL
+	);
+	`
+	_, err = db.Exec(createCategoryTableQuery)
+	if err != nil {
+		log.Fatal(err)
+		log.Println("Error al escanear producto:", err)
+	}
+
 	// Crear la tabla de productos
 	createProductTableQuery := `
 	CREATE TABLE IF NOT EXISTS products (
@@ -22,8 +35,8 @@ func SetupProductAndCartTables() {
 		description VARCHAR(255),
 		categoryID INTEGER NOT NULL,
 		FOREIGN KEY (categoryID) REFERENCES categories (id),
-		price DECIMAL(4,2) NOT NULL,
-		stock TINYINT NOT NULL,
+		price REAL NOT NULL,
+		stock INTEGER NOT NULL,
 		imageURL TEXT
 	);
 	`
@@ -44,17 +57,6 @@ func SetupProductAndCartTables() {
 	);
 	`
 	_, err = db.Exec(createCartTableQuery)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	createCategoryTableQuery := `
-	CREATE TABLE IF NOT EXISTS categories (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		nameCategory VARCHAR(15) NOT NULL,
-	);
-	`
-	_, err = db.Exec(createCategoryTableQuery)
 	if err != nil {
 		log.Fatal(err)
 	}

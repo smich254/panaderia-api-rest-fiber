@@ -73,7 +73,7 @@ func AddProduct(c *fiber.Ctx) error {
 	}
 
 	_, err := db.Exec("INSERT INTO products (name, description, categoryID, price, stock, imageURL) VALUES (?, ?, ?, ?, ?, ?)",
-		product.Name, product.Description, product.Price, product.Stock, product.ImageURL)
+		product.Name, product.Description, product.CategoryID, product.Price, product.Stock, product.ImageURL)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not insert product"})
 	}

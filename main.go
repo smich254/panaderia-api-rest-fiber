@@ -32,7 +32,7 @@ func main() {
 	// Descomentar las 2 lineas de código para el primer uso
 	// Nota: Actualizar las herramientas de go desde VS Code antes
 	// De descomentar
-	database.SetupDB()
+	//database.SetupDB()
 	
 	database.SetupProductAndCartTables()
 
