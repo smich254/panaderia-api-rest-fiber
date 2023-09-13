@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/smich254/panaderia-api-rest-fiber/database"
 )
 
@@ -26,17 +25,12 @@ type Product struct {
 	ImageURL    string  `json:"imageURL"`
 }
 
-
-func isAdmin(c *fiber.Ctx) bool {
-	user := c.Locals("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	admin := claims["admin"].(bool)
-	return admin
-}
-
 // GetAllCategories obtiene todas las categorias
 func GetAllCategories(c *fiber.Ctx) error {
 	log.Println("Fetching all categories...")
+	if !isAdmin(c) {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
 	db := database.InitDB()
 	defer db.Close()
 
