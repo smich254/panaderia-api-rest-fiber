@@ -198,3 +198,11 @@ func Logout(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"message": "Logged out", "token": t})
 }
+
+
+func isAdmin(c *fiber.Ctx) bool {
+	user := c.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	admin := claims["admin"].(bool)
+	return admin
+}
