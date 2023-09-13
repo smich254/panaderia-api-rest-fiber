@@ -28,6 +28,7 @@ func SetupProductAndCartTables() {
 	}
 
 	// Crear la tabla de productos
+	// Las llaves foraneas se deben colocar al final de la consulta
 	createProductTableQuery := `
 	CREATE TABLE IF NOT EXISTS products (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
