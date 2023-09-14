@@ -15,4 +15,5 @@ func SetupCartRoutes(app *fiber.App) {
     protected.Post("/cart/add", controllers.AddToCart)
     protected.Put("/cart/update", controllers.UpdateCartItem)
     protected.Delete("/cart/delete", controllers.DeleteFromCart)
+    protected.Post("/cart/checkout", controllers.Checkout)
 }
