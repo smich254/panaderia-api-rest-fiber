@@ -17,7 +17,7 @@ import (
 
 var jwtSecret = []byte(os.Getenv("JWT_SECRET")) // Obtener la llave secreta de una variable de entorno
 
-func GenerateJWT(name string, lastName string, email string, isAdmin bool, isLoggedIn bool) (string, error) {
+func GenerateJWT(name string, lastName string, userName string, email string, isAdmin bool, isLoggedIn bool) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	// La parte de "expiración" ahora se manejará aquí
@@ -26,6 +26,7 @@ func GenerateJWT(name string, lastName string, email string, isAdmin bool, isLog
 	claims := token.Claims.(jwt.MapClaims)
 	claims["name"] = name
 	claims["lastName"] = lastName
+	claims["userName"] = userName
 	claims["email"] = email
 	claims["admin"] = isAdmin
 	claims["exp"] = expTime
@@ -63,7 +64,7 @@ func Login(c *fiber.Ctx) error {
 	defer db.Close()
 
 	var user struct {
-		Email    string `json:"email"`
+		UserName    string `json:"userName"`
 		Password string `json:"password"`
 	}
 
@@ -71,11 +72,11 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
 	}
 
-	var email, hashedPassword, name, lastName string
-	err := db.QueryRow("SELECT email, password, name, lastName FROM users WHERE email = ?", user.Email).Scan(&email, &hashedPassword, &name, &lastName)
+	var email, hashedPassword, name, lastName, userName string
+	err := db.QueryRow("SELECT name, lastName, userName, email, password, FROM users WHERE userName = ?", user.UserName).Scan(&name, &lastName, &userName, &email, &hashedPassword,  )
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Printf("No user found with email: %s", user.Email) // Mensaje de depuración agregado
+			log.Printf("No user found with userName: %s", user.UserName) // Mensaje de depuración agregado
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
@@ -84,11 +85,11 @@ func Login(c *fiber.Ctx) error {
 	log.Printf("DB password: %s, Provided password: %s", hashedPassword, user.Password) // Mensaje de depuración agregado
 
 	if !checkPassword(hashedPassword, user.Password) {
-		log.Printf("Passwords do not match for email: %s", user.Email) // Mensaje de depuración agregado
+		log.Printf("Passwords do not match for userName: %s", user.UserName) // Mensaje de depuración agregado
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credSentials"})
 	}
 
-	token, err := GenerateJWT(email, name, lastName, false, true) // Corregido para utilizar la variable email
+	token, err := GenerateJWT(name, lastName, userName, email, false, true) // Corregido para utilizar la variable email
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not login"})
 	}
@@ -101,7 +102,7 @@ func AdminLogin(c *fiber.Ctx) error {
 	defer db.Close()
 
 	var admin struct {
-		Email     string `json:"email"`
+		UserName	string `json:"userName"`
 		Password  string `json:"password"`
 		AdminCode string `json:"admin_code"`
 	}
@@ -110,18 +111,18 @@ func AdminLogin(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
 	}
 
-	var email, hashedPassword, name, lastName string
+	var email, hashedPassword, name, lastName, userName string
 	var isAdmin bool
 
 	
-	err := db.QueryRow("SELECT email, name, lastName, password, isAdmin FROM users WHERE email = ?", admin.Email).Scan(&email, &name, &lastName, &hashedPassword, &isAdmin)
+	err := db.QueryRow("SELECT name, lastName, userName, email, password, isAdmin FROM users WHERE userName = ?", admin.UserName).Scan(&name, &lastName, &userName, &email, &hashedPassword, &isAdmin)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Printf("No user found with email: %s", admin.Email)
+			log.Printf("No user found with userName: %s", admin.UserName)
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid admin credentials"})
 		} else {
 			log.Printf("SQL Query Error: %v", err)                              // Log the SQL error
-			log.Printf("Failed admin login attempt for email: %s", admin.Email) // Debug message
+			log.Printf("Failed admin login attempt for userName: %s", admin.UserName) // Debug message
 		}
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
@@ -139,7 +140,7 @@ func AdminLogin(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid admin code"})
 	}
 
-	token, err := GenerateJWT("admin@example.com", name, lastName, true, true)
+	token, err := GenerateJWT(name, lastName, userName, email, true, true)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not login"})
 	}
@@ -154,6 +155,7 @@ func Register(c *fiber.Ctx) error {
 	var user struct {
 		Name 		string `json:"name"`
 		LastName 	string `json:"lastName"`
+		UserName	string `json:"userName"`
 		Email    	string `json:"email"`
 		Password 	string `json:"password"`
 		IsAdmin  	bool   `json:"isAdmin"`
@@ -165,7 +167,7 @@ func Register(c *fiber.Ctx) error {
 
 	hashedPassword := hashPassword(user.Password)
 
-	_, err := db.Exec("INSERT INTO users (name, lastName, email, password, isAdmin) VALUES (?, ?, ?, ?, ?)", user.Name, user.LastName, user.Email, hashedPassword, user.IsAdmin)
+	_, err := db.Exec("INSERT INTO users (name, lastName, userName, email, password, isAdmin) VALUES (?, ?, ?, ?, ?, ?)", user.Name, user.LastName, user.UserName, user.Email, hashedPassword, user.IsAdmin)
 	if err != nil {
 		log.Println("Error inserting new user:", err)
 		log.Println("SQL Error:", err)

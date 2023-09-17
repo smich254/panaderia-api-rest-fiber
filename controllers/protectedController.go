@@ -80,8 +80,8 @@ func UpdateUserProfile(c *fiber.Ctx) error {
 	}
 
 	// Realizar la actualización del perfil del usuario
-	_, err := db.Exec("UPDATE users SET name = ?, lastName = ?, email = ?, password = ? WHERE id = ?",
-		user.Name, user.LastName, user.Email, user.Password, userId)
+	_, err := db.Exec("UPDATE users SET name = ?, lastName = ?, userName = ?, email = ?, password = ? WHERE id = ?",
+		user.Name, user.LastName, user.UserName, user.Email, user.Password, userId)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not update user profile"})
 	}

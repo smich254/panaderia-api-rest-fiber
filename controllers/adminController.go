@@ -27,7 +27,7 @@ func GetAllUsersByAdmin(c *fiber.Ctx) error {
 	var users []models.User
 	for rows.Next() {
 		var user models.User
-		err := rows.Scan(&user.ID, &user.Name, &user.LastName, &user.Password, &user.IsAdmin)
+		err := rows.Scan(&user.ID, &user.Name, &user.LastName, &user.UserName, &user.Password, &user.IsAdmin)
 		if err != nil {
 			log.Println("Error al escanear usuarios:", err)
 			continue
@@ -51,8 +51,8 @@ func AddPUserByAdmin(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
 	}
 
-	_, err := db.Exec("INSERT INTO users (name, lastName, email, password, isAdmin) VALUES (?, ?, ?, ?, ?)",
-		user.Name, user.LastName, user.Email, user.Password, user.IsAdmin)
+	_, err := db.Exec("INSERT INTO users (name, lastName, userName, email, password, isAdmin) VALUES (?, ?, ?, ?, ?, ?)",
+		user.Name, user.LastName, user.UserName, user.Email, user.Password, user.IsAdmin)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not insert user"})
 	}
@@ -103,8 +103,8 @@ func UpdateUserByAdmin(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
 	}
 
-	_, err = db.Exec("UPDATE users SET name = ?, lastName = ?, email = ?, password = ?, isAdmin = ?",
-		user.Name, user.LastName, user.Email, user.Password, user.IsAdmin, userID)
+	_, err = db.Exec("UPDATE users SET name = ?, lastName = ?, userName = ?, email = ?, password = ?, isAdmin = ?",
+		user.Name, user.LastName, user.UserName, user.Email, user.Password, user.IsAdmin, userID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not update user"})
 	}

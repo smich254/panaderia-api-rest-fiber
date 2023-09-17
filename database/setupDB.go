@@ -29,6 +29,7 @@ func SetupDB() {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name VARCHAR(20),
 		lastName VARCHAR(20),
+		userName TEXT UNIQUE,
 		email TEXT UNIQUE,
 		password VARCHAR(20),
 		isAdmin BOOLEAN
